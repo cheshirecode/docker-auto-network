@@ -1,0 +1,59 @@
+version: "3.5"
+
+services:
+  proxy:
+    build: nginx/
+    container_name: "dind-proxy"
+    ports:
+      - "80:80"
+    restart: unless-stopped
+    networks:
+      - local
+
+  templates:
+    image: portainer/templates
+    container_name: "portainer-templates"
+    networks:
+      - local
+
+  portainer:
+    image: portainer/portainer:1.18.0
+    container_name: "portainer-app"
+    command: --templates http://templates/templates.json -H unix:///var/run/docker.sock
+    networks:
+      - local
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /opt/portainer/data:/data
+
+  server:
+    container_name: docker-auto-network
+    build: ./server
+    privileged: true
+    restart: unless-stopped
+    networks:
+      - local
+    expose:
+      - "80"
+      - "2375"
+      - "2376"
+    volumes:
+      - ./apps:/www
+
+  # dind-with-compose:
+  #   container_name: dind-with-compose
+  #   image: cheshirecode/dind-with-compose
+  #   build: ./dind-with-compose
+  #   command: --storage-driver=overlay2 --group 1000
+  #   privileged: true
+  #   restart: unless-stopped
+  #   networks:
+  #     - local
+  #   expose:
+  #     - "80"
+  #     - "2375"
+  #     - "2376"
+
+networks:
+  local:
+    driver: bridge
