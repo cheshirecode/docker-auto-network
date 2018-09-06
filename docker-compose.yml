@@ -38,7 +38,7 @@ services:
       - "2375"
       - "2376"
     volumes:
-      - ./apps:/www
+      - ./www:/www
 
   # dind-with-compose:
   #   container_name: dind-with-compose
