@@ -11,6 +11,29 @@ services:
       - portainer
     networks:
       - local
+    volumes:
+      - shared-nginx:/etc/nginx/conf.d
+    environment:
+      - VIRTUAL_HOST=proxy.local
+
+  dockergen:
+    image: jwilder/docker-gen
+    command: -notify-sighup dind-proxy -watch /etc/docker-gen/templates/nginx.tmpl /etc/nginx/conf.d/dockergen.conf
+    depends_on:
+      - proxy
+    networks:
+      - local
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock
+      - ./nginx.tmpl:/etc/docker-gen/templates/nginx.tmpl
+      - shared-nginx:/etc/nginx/conf.d
+
+  # whoami:
+  #   image: jwilder/whoami
+  #   networks:
+  #     - local
+  #   environment:
+  #     - VIRTUAL_HOST=whoami.local
 
   templates:
     image: portainer/templates
@@ -61,3 +84,7 @@ services:
 networks:
   local:
     driver: bridge
+  # local1:
+  #   driver: bridge
+volumes:
+  shared-nginx:
