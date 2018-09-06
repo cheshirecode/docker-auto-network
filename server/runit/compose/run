@@ -1,0 +1,5 @@
+#!/bin/sh
+# shellcheck disable=SC1091
+. /etc/envvars
+cd "$WWW_PATH" || exit
+tail -f /dev/null

@@ -7,6 +7,8 @@ services:
     ports:
       - "80:80"
     restart: unless-stopped
+    depends_on:
+      - portainer
     networks:
       - local
 
@@ -22,6 +24,8 @@ services:
     command: --templates http://templates/templates.json -H unix:///var/run/docker.sock
     networks:
       - local
+    depends_on:
+      - templates
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - /opt/portainer/data:/data
@@ -37,15 +41,22 @@ services:
       - "80"
       - "2375"
       - "2376"
+    depends_on:
+      - dind-with-compose
     volumes:
       - ./www:/www
+      - /var/lib/docker:/var/lib/docker
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - WWW_PATH=/www
 
-  # dind-with-compose:
-  #   container_name: dind-with-compose
-  #   image: cheshirecode/dind-with-compose
-  #   build: ./dind-with-compose
-  #   command: echo it works
-  #   privileged: true
+  dind-with-compose:
+    container_name: dind-with-compose
+    image: cheshirecode/dind-with-compose
+    build: ./dind-with-compose
+    command: echo it works
+    networks:
+      - local
 
 networks:
   local:
