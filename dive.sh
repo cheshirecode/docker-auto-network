@@ -6,7 +6,7 @@ n="${n:- 0}"
 
 ##
 # The dind image
-dind="${dind:- 'cheshirecode/dind-with-compose'}"
+dind="${dind:-cheshirecode/dind-with-compose}"
 
 ##
 # Run a docker command by arbitrarily nesting dind
@@ -15,8 +15,8 @@ c=0
 dive() {
     if (( n-- > 0 )); then
         c=$((c+1))
-        echo "$dind - level $c" 
-        dive run --rm -it -v /var/run/docker.sock:/var/run/docker.sock --privileged=true "$dind" docker "$@"
+        echo "Level $c" 
+        dive run --rm -t -v /var/run/docker.sock:/var/run/docker.sock --privileged=true "$dind" docker "$@"
     else
         exec docker "$@"
     fi
