@@ -1,7 +1,8 @@
 #!/bin/sh
-source /etc/envvars;
-kill `ps -ef | grep 'inotifywait -m -e moved_to -e moved_from -e close_write -e modify -e attrib --format %e %w%f /www' | awk '{print $1}'`;
-exec inotifywait -m -e moved_to -e moved_from -e close_write -e modify -e attrib --format "%e %w%f" /www |
-  while read evt dir file; do
+# shellcheck disable=SC1091
+. /etc/envvars;
+kill `ps -ef | grep $(whoami) | grep 'inotifywait' | grep '/www' | awk '{print $1}'`;
+exec inotifywait -mr -e create -e delete -e moved_to -e moved_from -e close_write -e modify -e attrib --format "%e %w %f" /www |
+  while read -r evt dir file; do
     echo "Event: $evt, Dir: $dir, File: $file"
   done

@@ -27,5 +27,5 @@ RUN apk add --no-cache --update curl && \
     rm -rf /tmp/*
 
 WORKDIR /www
-
+EXPOSE 2375 2376
 ENTRYPOINT ["dockerd-entrypoint.sh"]

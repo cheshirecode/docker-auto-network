@@ -44,15 +44,8 @@ services:
   #   container_name: dind-with-compose
   #   image: cheshirecode/dind-with-compose
   #   build: ./dind-with-compose
-  #   command: --storage-driver=overlay2 --group 1000
+  #   command: echo it works
   #   privileged: true
-  #   restart: unless-stopped
-  #   networks:
-  #     - local
-  #   expose:
-  #     - "80"
-  #     - "2375"
-  #     - "2376"
 
 networks:
   local:
