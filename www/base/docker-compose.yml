@@ -1,0 +1,60 @@
+version: "3.5"
+
+services:
+  proxy:
+    build: nginx/
+    container_name: "dind-proxy"
+    ports:
+      - "80:80"
+    restart: unless-stopped
+    depends_on:
+      - portainer
+    networks:
+      - local
+    volumes:
+      - shared-nginx:/etc/nginx/conf.d
+    environment:
+      - VIRTUAL_HOST=proxy.local
+
+  dockergen:
+    image: jwilder/docker-gen
+    command: -notify-sighup dind-proxy -watch /etc/docker-gen/templates/nginx.tmpl /etc/nginx/conf.d/dockergen.conf
+    depends_on:
+      - proxy
+    networks:
+      - local
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock
+      - ./dockergen:/etc/docker-gen/templates
+      - shared-nginx:/etc/nginx/conf.d
+
+  # whoami:
+  #   image: jwilder/whoami
+  #   networks:
+  #     - local
+  #   environment:
+  #     - VIRTUAL_HOST=whoami.local
+
+  templates:
+    image: portainer/templates
+    container_name: "portainer-templates"
+    networks:
+      - local
+
+  portainer:
+    image: portainer/portainer:1.18.0
+    container_name: "portainer-app"
+    command: --templates http://templates/templates.json -H unix:///var/run/docker.sock
+    networks:
+      - local
+    depends_on:
+      - templates
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /opt/portainer/data:/data
+
+networks:
+  local:
+    driver: bridge
+volumes:
+  shared-nginx:

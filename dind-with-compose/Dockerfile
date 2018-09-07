@@ -26,6 +26,5 @@ RUN apk add --no-cache --update curl && \
     apk del --purge .deps && \
     rm -rf /tmp/*
 
-WORKDIR /www
 EXPOSE 2375 2376
 ENTRYPOINT ["dockerd-entrypoint.sh"]
