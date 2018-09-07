@@ -1,7 +1,6 @@
 version: "3.5"
 
 services:
-
   proxy:
     build: nginx/
     container_name: "network-proxy"
@@ -13,7 +12,6 @@ services:
     networks:
       - local
     volumes:
-      # - shared-nginx/etc/nginx/conf.d
       - shared-nginx-confd:/etc/nginx/conf.d
       - shared-nginx-extras:/etc/nginx/extras
 
@@ -29,7 +27,6 @@ services:
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock
       - ./dockergen:/etc/docker-gen/templates
-      # - shared-nginx/etc/nginx/conf.d
       - shared-nginx-extras:/etc/nginx/extras
 
   virtualhost:
@@ -43,7 +40,6 @@ services:
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock
       - ./dockergen:/etc/docker-gen/templates
-      # - shared-nginx/etc/nginx/conf.d
       - shared-nginx-confd:/etc/nginx/conf.d
 
   whoami:
