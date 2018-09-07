@@ -1,36 +1,82 @@
 version: "3.5"
 
 services:
-  dind-server:
-    container_name: dind-server
-    # privileged: true
-    build: ./server
-    # command: --storage-driver=overlay2 --group 1000
-    restart: unless-stopped
-    networks:
-      - local
-    expose:
-      - 80
-      - 2375
-      - 2376
-    volumes:
-      - ./www:/www
-    environment:
-      - WWW_PATH=/www
-      - DOCKER_HOST=tcp://dind-with-compose:2375
 
-  dind-with-compose:
-    container_name: dind-with-compose
-    image: cheshirecode/dind-with-compose
-    privileged: true
-    build: ./dind-with-compose
-    command: --storage-driver=overlay2 --group 1000
-    volumes:
-      - /tmp/var/lib/docker:/var/lib/docker
+  proxy:
+    build: nginx/
+    container_name: "network-proxy"
+    ports:
+      - "80:80"
+    restart: unless-stopped
+    depends_on:
+      - portainer
     networks:
       - local
+    volumes:
+      # - shared-nginx/etc/nginx/conf.d
+      - shared-nginx-confd:/etc/nginx/conf.d
+      - shared-nginx-extras:/etc/nginx/extras
+
+  location:
+    image: jwilder/docker-gen
+    container_name: "network-dg-location"
+    command: -notify-sighup network-proxy -watch /etc/docker-gen/templates/location.tmpl /etc/nginx/extras/dockergen_location.conf
+    depends_on:
+      - proxy
+      - virtualhost
+    networks:
+      - local
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock
+      - ./dockergen:/etc/docker-gen/templates
+      # - shared-nginx/etc/nginx/conf.d
+      - shared-nginx-extras:/etc/nginx/extras
+
+  virtualhost:
+    image: jwilder/docker-gen
+    container_name: "network-dg-virtualhost"
+    command: -notify-sighup network-proxy -watch /etc/docker-gen/templates/nginx.tmpl /etc/nginx/conf.d/dockergen_nginx.conf
+    depends_on:
+      - proxy
+    networks:
+      - local
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock
+      - ./dockergen:/etc/docker-gen/templates
+      # - shared-nginx/etc/nginx/conf.d
+      - shared-nginx-confd:/etc/nginx/conf.d
+
+  whoami:
+    image: jwilder/whoami
+    container_name: "whoami"
+    networks:
+      - local
+    environment:
+      - VIRTUAL_HOST=whoami.local
+
+  templates:
+    image: portainer/templates
+    container_name: "portainer-templates"
+    networks:
+      - local
+
+  portainer:
+    image: portainer/portainer:1.18.0
+    container_name: "portainer"
+    command: --templates http://templates/templates.json -H unix:///var/run/docker.sock
+    networks:
+      - local
+    depends_on:
+      - templates
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /opt/portainer/data:/data
 
 networks:
   local:
+    name: local
     driver: bridge
-    external: true
+
+volumes:
+  shared-nginx-extras:
+  shared-nginx-confd:
