@@ -8,7 +8,8 @@
 
   {{/* Get the VIRTUAL_PROTO defined by containers w/ the same vhost, falling back to "http" */}}
   {{ $proto := trim (or (first (groupByKeys $containers "Env.VIRTUAL_PROTO")) "http") }}
-
+  {{/* Get the VIRTUAL_ROOT By containers w/ use fastcgi root */}}
+  {{ $vhost_root := or (first (groupByKeys $containers "Env.VIRTUAL_ROOT")) "/var/www/public" }}
 
   {{ $host := trim $host }}
   {{ $is_regexp := hasPrefix "~" $host }}
