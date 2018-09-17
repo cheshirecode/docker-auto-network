@@ -7,8 +7,8 @@ services:
     ports:
       - "80:80"
     restart: unless-stopped
-    depends_on:
-      - portainer
+    # depends_on:
+    #   - portainer
     networks:
       - local
     volumes:
